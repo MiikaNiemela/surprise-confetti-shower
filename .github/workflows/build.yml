@@ -39,9 +39,18 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Publish single-file exe
+      - name: Publish self-contained exe
         run: dotnet publish src/SurpriseConfettiShower -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:EnableCompressionInSingleFile=true -o publish
+
+      # Same app without the bundled runtime: ~240 KB instead of ~72 MB, but the machine needs
+      # the .NET Desktop Runtime installed.
+      - name: Publish framework-dependent exe
+        run: |
+          dotnet publish src/SurpriseConfettiShower -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -p:DebugType=none -o publish-fd
+          Move-Item publish-fd/SurpriseConfettiShower.exe publish/SurpriseConfettiShower-framework-dependent.exe
 
       - uses: softprops/action-gh-release@v2
         with:
-          files: publish/SurpriseConfettiShower.exe
+          files: |
+            publish/SurpriseConfettiShower.exe
+            publish/SurpriseConfettiShower-framework-dependent.exe

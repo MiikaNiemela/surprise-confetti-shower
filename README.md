@@ -22,12 +22,18 @@ nobody else is going to throw one. 🎉
 
 ## Install
 
-1. Download `SurpriseConfettiShower.exe` from the
-   [Releases page](https://github.com/MiikaNiemela/surprise-confetti-shower/releases).
-2. Run it.
+Grab one of these from the
+[Releases page](https://github.com/MiikaNiemela/surprise-confetti-shower/releases) and run it.
+Windows 10 or 11, x64.
 
-That is the whole installation. It tucks itself into the notification area (the
-tray, next to the clock) and waits. Windows 10 or 11, x64.
+| Download | Size | Needs |
+| --- | --- | --- |
+| `SurpriseConfettiShower.exe` | ~72 MB | Nothing at all - the runtime is baked in. |
+| `SurpriseConfettiShower-framework-dependent.exe` | ~240 KB | The [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0) |
+
+Take the first one unless you already have the .NET Desktop Runtime, or you mind 72 MB for a
+confetti cannon. Either way there is no installer: it tucks itself into the notification area
+(the tray, next to the clock) and waits.
 
 ## Using it
 

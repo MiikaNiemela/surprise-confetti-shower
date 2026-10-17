@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="src/SurpriseConfettiShower/SurpriseConfettiShower.csproj" />
+  <Project Path="tests/SurpriseConfettiShower.Tests/SurpriseConfettiShower.Tests.csproj" />
+</Solution>

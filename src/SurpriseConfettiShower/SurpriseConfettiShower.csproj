@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- WinForms is referenced only for NotifyIcon (tray) and Screen.AllScreens. -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SurpriseConfettiShower</AssemblyName>
+    <RootNamespace>SurpriseConfettiShower</RootNamespace>
+    <ApplicationIcon>app.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Product>Surprise Confetti Shower</Product>
+    <Description>A tiny tray app that showers your screen with confetti when you least expect it.</Description>
+    <Authors>Miika Niemelä</Authors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- WinForms would otherwise be a project-wide implicit using, and its Application, Size,
+         Color and Point collide with the WPF ones. The few files that need it alias it. -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Also loaded at runtime for the tray icon, so it must be a resource as well. -->
+    <Resource Include="app.ico" />
+  </ItemGroup>
+
+</Project>

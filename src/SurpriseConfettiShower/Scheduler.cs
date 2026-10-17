@@ -42,6 +42,9 @@ public sealed class Scheduler : IDisposable
     public void Reload(Settings settings)
     {
         _settings = settings;
+
+        // Edited preferences deserve fresh times: the stored ones were rolled for the old ones.
+        _settings.SurpriseSchedule.Clear();
         _lastCheck = DateTime.Now;
         EnsureSchedule(_lastCheck);
     }
@@ -63,11 +66,6 @@ public sealed class Scheduler : IDisposable
 
     private void EnsureSchedule(DateTime now)
     {
-        if (_settings.Mode != TriggerMode.Surprise)
-        {
-            return;
-        }
-
         // Persisted immediately, so a restart replays today's rolled times instead of new ones.
         if (ScheduleCalculator.EnsureSurpriseSchedule(_settings, now, _rng))
         {

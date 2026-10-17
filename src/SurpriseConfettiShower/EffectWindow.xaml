@@ -7,7 +7,6 @@
         ShowInTaskbar="False"
         Topmost="True"
         ResizeMode="NoResize"
-        WindowStartupLocation="Manual"
         ShowActivated="False"
         IsHitTestVisible="False"
         Focusable="False" />

@@ -19,7 +19,6 @@ public partial class SettingsWindow : Window
         InitializeComponent();
 
         _edited = current.Clone();
-        _edited.Normalize();
         LoadControls();
     }
 
@@ -47,7 +46,7 @@ public partial class SettingsWindow : Window
 
         EveryHourOption.IsChecked = _edited.Schedule == ScheduleKind.EveryFullHour;
         SpecificTimesOption.IsChecked = _edited.Schedule == ScheduleKind.SpecificTimes;
-        TimesBox.Text = string.Join(", ", _edited.Times.Select(t => t.ToString("HH\\:mm")));
+        TimesBox.Text = string.Join(", ", _edited.Times.Select(t => t.ToString(TimeFormats[0])));
 
         StartWithWindowsBox.IsChecked = _edited.StartWithWindows;
     }

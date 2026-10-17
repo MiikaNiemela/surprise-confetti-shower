@@ -26,7 +26,6 @@ public sealed class FireworksEffect : EffectCanvas
 
     private readonly Shell[] _shells = new Shell[Random.Shared.Next(6, 11)];
     private readonly Spark[] _sparks;
-    private bool _started;
     private int _bursts;
     private int _liveSparks;
 
@@ -34,15 +33,10 @@ public sealed class FireworksEffect : EffectCanvas
 
     protected override TimeSpan MaxDuration => TimeSpan.FromSeconds(12);
 
-    protected override bool IsFinished => _started && _bursts == _shells.Length && _liveSparks == 0;
+    protected override bool IsFinished => _bursts == _shells.Length && _liveSparks == 0;
 
     protected override void Update(double dt, Size size)
     {
-        if (!_started)
-        {
-            Start(size);
-        }
-
         // Scaled to the screen height so every monitor runs at the same pace.
         double gravity = size.Height * 0.7;
 
@@ -87,11 +81,6 @@ public sealed class FireworksEffect : EffectCanvas
 
     protected override void Draw(DrawingContext dc, Size size)
     {
-        if (!_started)
-        {
-            return;
-        }
-
         for (int i = 0; i < _sparks.Length; i++)
         {
             ref var spark = ref _sparks[i];
@@ -127,10 +116,8 @@ public sealed class FireworksEffect : EffectCanvas
         }
     }
 
-    private void Start(Size size)
+    protected override void Start(Size size)
     {
-        _started = true;
-
         for (int i = 0; i < _shells.Length; i++)
         {
             _shells[i] = new Shell

@@ -16,7 +16,7 @@ public partial class App : Application
     private WinForms.NotifyIcon? _tray;
     private Scheduler? _scheduler;
     private Settings _settings = new();
-    private bool _settingsOpen;
+    private SettingsWindow? _settingsWindow;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -36,9 +36,8 @@ public partial class App : Application
         _tray = CreateTrayIcon();
 
         _scheduler = new Scheduler(_settings);
-        _scheduler.Due += OnDue;
+        _scheduler.Due += (_, _) => EffectPlayer.Play(_settings.Effect);
         _scheduler.Start();
-        UpdateTooltip();
 
         // Lets you preview an effect without opening the settings window.
         if (e.Args.Contains("--test"))
@@ -73,9 +72,14 @@ public partial class App : Application
         {
             Icon = LoadTrayIcon(),
             ContextMenuStrip = menu,
+            Text = AppName,
             Visible = true,
         };
         tray.DoubleClick += (_, _) => ShowSettings();
+
+        // Read when the pointer arrives rather than pushed from a handful of places, so it cannot
+        // go stale - including after an effect was skipped because the machine was asleep.
+        tray.MouseMove += (_, _) => tray.Text = TooltipText();
         return tray;
     }
 
@@ -87,24 +91,23 @@ public partial class App : Application
 
     private void ShowSettings()
     {
-        if (_settingsOpen)
+        // The tray menu is not an owned window, so ShowDialog alone does not stop a second click.
+        if (_settingsWindow is not null)
         {
+            _settingsWindow.Activate();
             return;
         }
 
-        _settingsOpen = true;
+        _settingsWindow = new SettingsWindow(_settings);
         try
         {
-            var dialog = new SettingsWindow(_settings);
-            dialog.ShowDialog();
+            _settingsWindow.ShowDialog();
 
-            if (dialog.Result is not { } saved)
+            if (_settingsWindow.Result is not { } saved)
             {
                 return;
             }
 
-            // Any save re-rolls the surprise times, so changed active hours take effect at once.
-            saved.SurpriseSchedule.Clear();
             _settings = saved;
 
             if (!_settings.Save())
@@ -116,29 +119,15 @@ public partial class App : Application
 
             Autostart.Set(_settings.StartWithWindows);
             _scheduler!.Reload(_settings);
-            UpdateTooltip();
         }
         finally
         {
-            _settingsOpen = false;
+            _settingsWindow = null;
         }
     }
 
-    private void OnDue(object? sender, EventArgs e)
-    {
-        EffectPlayer.Play(_settings.Effect);
-        UpdateTooltip();
-    }
-
-    private void UpdateTooltip()
-    {
-        if (_tray is null)
-        {
-            return;
-        }
-
-        _tray.Text = _scheduler?.Next is { } next
+    private string TooltipText() =>
+        _scheduler?.Next is { } next
             ? $"{AppName} - next {next:ddd HH:mm}"
             : $"{AppName} - nothing scheduled";
-    }
 }

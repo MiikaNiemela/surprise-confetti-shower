@@ -1,3 +1,4 @@
+using System.Windows;
 using WinForms = System.Windows.Forms;
 
 namespace SurpriseConfettiShower;
@@ -5,11 +6,6 @@ namespace SurpriseConfettiShower;
 /// <summary>Plays one effect at a time, across every monitor at once.</summary>
 public static class EffectPlayer
 {
-    private static int _openOverlays;
-
-    /// <summary>True from the moment the overlays open until the last one has closed itself.</summary>
-    public static bool IsPlaying => _openOverlays > 0;
-
     /// <summary>
     /// Opens a click-through overlay on each monitor, each running its own particle simulation
     /// and closing itself when the animation ends. Does nothing while an effect is still
@@ -17,17 +13,15 @@ public static class EffectPlayer
     /// </summary>
     public static void Play(EffectKind kind)
     {
-        if (IsPlaying)
+        // WPF removes a window from this collection as it closes, so it already tracks the overlays.
+        if (Application.Current.Windows.OfType<EffectWindow>().Any())
         {
             return;
         }
 
         foreach (var screen in WinForms.Screen.AllScreens)
         {
-            var window = new EffectWindow(screen.Bounds, kind);
-            window.Closed += (_, _) => _openOverlays--;
-            _openOverlays++;
-            window.Show();
+            new EffectWindow(screen.Bounds, kind).Show();
         }
     }
 }

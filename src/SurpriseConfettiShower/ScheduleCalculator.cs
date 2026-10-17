@@ -20,19 +20,11 @@ public static class ScheduleCalculator
     /// is ever returned, and a caller that advances <paramref name="lastCheck"/> to
     /// <paramref name="now"/> can never see the same one twice.
     /// </summary>
-    public static DateTime? FindDue(Settings s, DateTime lastCheck, DateTime now, TimeSpan grace)
-    {
-        DateTime? due = null;
-        foreach (var t in Occurrences(s, lastCheck, now))
-        {
-            if (now - t <= grace)
-            {
-                due = t;
-            }
-        }
-
-        return due;
-    }
+    public static DateTime? FindDue(Settings s, DateTime lastCheck, DateTime now, TimeSpan grace) =>
+        Occurrences(s, lastCheck, now)
+            .Where(t => now - t <= grace)
+            .Select(t => (DateTime?)t)
+            .LastOrDefault();
 
     /// <summary>
     /// Tops up <see cref="Settings.SurpriseSchedule"/> so it covers today and tomorrow, and drops
@@ -40,6 +32,11 @@ public static class ScheduleCalculator
     /// </summary>
     public static bool EnsureSurpriseSchedule(Settings s, DateTime now, Random rng)
     {
+        if (s.Mode != TriggerMode.Surprise)
+        {
+            return false;
+        }
+
         var today = now.Date;
         var changed = s.SurpriseSchedule.RemoveAll(t => t < today) > 0;
         var earliestToday = NextMinute(now);

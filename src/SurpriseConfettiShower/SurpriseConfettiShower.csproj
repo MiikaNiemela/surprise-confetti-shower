@@ -8,8 +8,6 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <AssemblyName>SurpriseConfettiShower</AssemblyName>
-    <RootNamespace>SurpriseConfettiShower</RootNamespace>
     <ApplicationIcon>app.ico</ApplicationIcon>
     <Version>1.0.0</Version>
     <Product>Surprise Confetti Shower</Product>

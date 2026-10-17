@@ -16,20 +16,19 @@ public sealed class ConfettiEffect : EffectCanvas
     ];
 
     private readonly Piece[] _pieces = new Piece[PieceCount];
-    private bool _started;
+
+    // One transform per piece, reused every frame: allocating 200 of them per frame per monitor
+    // was the only per-frame allocation left in the app.
+    private readonly RotateTransform[] _spin = new RotateTransform[PieceCount];
+
     private int _falling;
 
     protected override TimeSpan MaxDuration => TimeSpan.FromSeconds(10);
 
-    protected override bool IsFinished => _started && _falling == 0;
+    protected override bool IsFinished => _falling == 0;
 
     protected override void Update(double dt, Size size)
     {
-        if (!_started)
-        {
-            Start(size);
-        }
-
         // Speeds are a fraction of the screen height, so a tall and a short monitor take the
         // same time to empty and the two overlays close together.
         double gravity = size.Height * 0.6;
@@ -65,11 +64,6 @@ public sealed class ConfettiEffect : EffectCanvas
 
     protected override void Draw(DrawingContext dc, Size size)
     {
-        if (!_started)
-        {
-            return;
-        }
-
         for (int i = 0; i < _pieces.Length; i++)
         {
             ref var piece = ref _pieces[i];
@@ -81,7 +75,12 @@ public sealed class ConfettiEffect : EffectCanvas
             // Squeezing the width fakes a piece of paper turning edge-on as it spins.
             double width = piece.Width * Math.Abs(Math.Cos(piece.FlutterPhase));
 
-            dc.PushTransform(new RotateTransform(piece.Angle, piece.X, piece.Y));
+            var spin = _spin[i];
+            spin.Angle = piece.Angle;
+            spin.CenterX = piece.X;
+            spin.CenterY = piece.Y;
+
+            dc.PushTransform(spin);
             dc.DrawRectangle(
                 Palette[piece.Colour],
                 null,
@@ -90,9 +89,8 @@ public sealed class ConfettiEffect : EffectCanvas
         }
     }
 
-    private void Start(Size size)
+    protected override void Start(Size size)
     {
-        _started = true;
         _falling = _pieces.Length;
 
         for (int i = 0; i < _pieces.Length; i++)
@@ -115,6 +113,8 @@ public sealed class ConfettiEffect : EffectCanvas
                 Spin = Rand(-150, 150),
                 Colour = Random.Shared.Next(Palette.Length),
             };
+
+            _spin[i] = new RotateTransform();
         }
     }
 

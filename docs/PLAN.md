@@ -48,6 +48,11 @@ either at random "surprise" moments or on a schedule you pick. Built for
   for a setting that nobody needs at minute precision.
 - **Next effect time** is shown in the tray tooltip, not in the settings dialog — the
   tooltip always reflects saved state, so it can never show a stale value for unsaved edits.
+  It is read when the pointer reaches the icon rather than pushed, so it stays correct even
+  when an effect was skipped rather than played.
+- **Who writes `settings.json`**: whoever edits a preference saves it (and reports a failed
+  write); the `Scheduler` saves the surprise times it rolls, because it is the only thing that
+  rolls them. `Scheduler.Reload` clears them so edited preferences get fresh times.
 - **Single instance** via a named mutex: two trays would mean two overlays per event.
 - **Autostart** is an `HKCU\...\Run` value, toggled by a checkbox (on by default — an app
   that surprises you is useless if it is not running).
@@ -96,7 +101,7 @@ sealed class Settings {
     List<DateTime> SurpriseSchedule { get; set; }  // generated local times, persisted
     static string FilePath { get; }
     static Settings Load();                    // never throws; returns defaults on any error
-    void Save();                               // never throws
+    bool Save();                               // never throws; false if it could not be written
     Settings Clone();
 }
 
@@ -111,13 +116,13 @@ sealed class Scheduler : IDisposable {           // 20 s DispatcherTimer, 2 min 
     Scheduler(Settings settings);
     event EventHandler? Due;                     // UI thread
     void Start();
-    void Reload(Settings settings);              // after a save
+    void Reload(Settings settings);              // after a save: re-rolls the surprise times
     DateTime? Next { get; }
 }
 
-static class Autostart { bool IsEnabled { get; } void Set(bool enabled); }
+static class Autostart { void Set(bool enabled); }
 
-static class EffectPlayer { bool IsPlaying { get; } void Play(EffectKind kind); }
+static class EffectPlayer { void Play(EffectKind kind); }
 
 partial class SettingsWindow : Window {
     SettingsWindow(Settings current);  // edits a clone; Test button calls EffectPlayer.Play

@@ -14,19 +14,21 @@ public abstract class EffectCanvas : FrameworkElement
 
     private TimeSpan _previousFrame = TimeSpan.MinValue;
     private double _elapsed;
-    private bool _subscribed;
-    private bool _finished;
+    private bool _started;
 
     protected EffectCanvas()
     {
-        Loaded += (_, _) => Subscribe();
+        Loaded += (_, _) => CompositionTarget.Rendering += OnRendering;
         // CompositionTarget.Rendering is a static event: a missed unsubscribe keeps this canvas
         // alive and burning a frame's worth of CPU for the rest of the process's life.
-        Unloaded += (_, _) => Unsubscribe();
+        Unloaded += (_, _) => CompositionTarget.Rendering -= OnRendering;
     }
 
     /// <summary>Raised once, on the UI thread, when the effect has played out.</summary>
     public event EventHandler? Finished;
+
+    /// <summary>Lays the particles out. Called once, on the first frame, when the size is known.</summary>
+    protected abstract void Start(Size size);
 
     /// <summary>Advances the simulation by <paramref name="dt"/> seconds.</summary>
     protected abstract void Update(double dt, Size size);
@@ -49,8 +51,14 @@ public abstract class EffectCanvas : FrameworkElement
 
     protected static double Rand(double min, double max) => min + (Random.Shared.NextDouble() * (max - min));
 
-    protected sealed override void OnRender(DrawingContext drawingContext) =>
-        Draw(drawingContext, new Size(ActualWidth, ActualHeight));
+    protected sealed override void OnRender(DrawingContext drawingContext)
+    {
+        // OnRender can run before the first frame, when there is nothing laid out to draw yet.
+        if (_started)
+        {
+            Draw(drawingContext, new Size(ActualWidth, ActualHeight));
+        }
+    }
 
     private void OnRendering(object? sender, EventArgs e)
     {
@@ -70,40 +78,24 @@ public abstract class EffectCanvas : FrameworkElement
             return;
         }
 
+        var size = new Size(ActualWidth, ActualHeight);
+        if (!_started)
+        {
+            _started = true;
+            Start(size);
+        }
+
         // A stall must not teleport every particle across the screen.
         dt = Math.Min(dt, MaxFrameStep);
         _elapsed += dt;
 
-        Update(dt, new Size(ActualWidth, ActualHeight));
+        Update(dt, size);
         InvalidateVisual();
 
         if (IsFinished || _elapsed >= MaxDuration.TotalSeconds)
         {
-            _finished = true;
-            Unsubscribe();
+            CompositionTarget.Rendering -= OnRendering;
             Finished?.Invoke(this, EventArgs.Empty);
         }
-    }
-
-    private void Subscribe()
-    {
-        if (_subscribed || _finished)
-        {
-            return;
-        }
-
-        _subscribed = true;
-        CompositionTarget.Rendering += OnRendering;
-    }
-
-    private void Unsubscribe()
-    {
-        if (!_subscribed)
-        {
-            return;
-        }
-
-        _subscribed = false;
-        CompositionTarget.Rendering -= OnRendering;
     }
 }

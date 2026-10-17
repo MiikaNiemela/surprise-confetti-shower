@@ -42,6 +42,8 @@ public partial class EffectWindow : Window
     {
         base.OnSourceInitialized(e);
 
+        // These extended styles are what actually guarantee click-through and non-activation; the
+        // matching XAML attributes are belt-and-braces at the WPF level. Do not drop either half.
         var hwnd = new WindowInteropHelper(this).Handle;
         SetWindowLong(
             hwnd,

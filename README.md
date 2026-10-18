@@ -1,3 +1,5 @@
+<img src="docs/img/icon.png" alt="" width="88" align="right">
+
 # Surprise Confetti Shower
 
 [![build](https://github.com/MiikaNiemela/surprise-confetti-shower/actions/workflows/build.yml/badge.svg)](https://github.com/MiikaNiemela/surprise-confetti-shower/actions/workflows/build.yml)
@@ -6,8 +8,7 @@ A tiny Windows tray app that drops a full-screen confetti shower on you when you
 least expect it. Your screen deserves a small celebration now and then, and
 nobody else is going to throw one. 🎉
 
-<!-- TODO: record a few seconds of confetti over an ordinary desktop, save it as docs/demo.gif
-     and drop it in here: ![Confetti falling across a desktop](docs/demo.gif) -->
+![A confetti shower falling across the desktop, with the settings window open](docs/img/Screenshot-v0.1.1.png)
 
 ## Features
 
